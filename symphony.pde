@@ -1,64 +1,77 @@
 import processing.serial.*;
-import ddf.minim.*;
+import org.firmata.*;
 import cc.arduino.*;
+import ddf.minim.*;
+import ddf.minim.ugens.*;
 
 Arduino arduino;
-Minim minim;
-AudioPlayer cricket, cicada, mantis, spittle, bee, mosquito;
+boolean useArduino = false;
 
-float threshold = 200; // Out of 1023
+Minim minim;
+AudioOutput out;
+
+Clock clock;
+Swarm swarm;
+
+String keys = "qwertyuiopasdfghjklzxcvb";
 
 void setup() {
-  size(640, 360);
+
+  size(640, 480);
+
+  // Audio Setup
+  minim = new Minim(this);
+  out = minim.getLineOut();  
+
+  // Custom Classes
+  clock = new Clock(2.0);
+  swarm = new Swarm();
 
   // Arduino Setup
 
-  println(Arduino.list());
+  if (useArduino) {
+    //println(Arduino.list());
+    arduino = new Arduino(this, Arduino.list()[2], 57600);
 
-  // Change port here based on list above
-  arduino = new Arduino(this, Arduino.list()[2], 57600);
-
-  // Audio Setup
-
-  minim = new Minim(this);
-
-  cricket = minim.loadFile("cricket.wav");
-  cicada = minim.loadFile("cicada.wav");
-  mantis = minim.loadFile("mantis.wav");
-  spittle = minim.loadFile("spittle.wav");
-  bee = minim.loadFile("bee.wav");
-  mosquito = minim.loadFile("mosquito.wav");
-  
-  cricket.loop();
-  cicada.loop();
-  mantis.loop();  
-  spittle.loop();
-  bee.loop();
-  mosquito.loop();
-  
+    for (int i = 0; i < swarm.insectCount (); i++) {
+      arduino.pinMode(swarm.getInsect(i).port, Arduino.INPUT);
+    }
+  }
+  // Disable GUI for performance
+  //noLoop();
 }
 
-void draw() {
-  background(4, 79, 111);
-  fill(84, 145, 158);
-  stroke(255);
-  
-  for (int i = 0; i <= 5; i++) {
-    rect((width/6.0) * i, height - (height * (arduino.analogRead(i)/1023.0)), width/6.0, height);
+void draw()
+{  
+  background(0);
+
+  for (int i = 0; i < swarm.insectCount (); i++) {
+    if (useArduino) {
+      if (arduino.digitalRead(swarm.getInsect(i).port) == Arduino.HIGH) {
+        swarm.wakeInsect(i);
+      } else {
+        swarm.sleepInsect(i);
+      }
+    }
+
+    stroke(255);
+    if (swarm.getInsect(i).awake) {
+      fill(255, 128, 128);
+    } else {
+      fill(0);
+    }
+    rect(0, i * (height / swarm.insectCount()), width, (height / swarm.insectCount()));
   }
-  
-  if (arduino.analogRead(0) > threshold) cricket.mute(); else cricket.unmute();
-  if (arduino.analogRead(1) > threshold) cicada.mute(); else cicada.unmute();
-  if (arduino.analogRead(2) > threshold) mantis.mute(); else mantis.unmute();
-  if (arduino.analogRead(3) > threshold) spittle.mute(); else spittle.unmute();
-  if (arduino.analogRead(4) > threshold) bee.mute(); else bee.unmute();
-  if (arduino.analogRead(5) > threshold) mosquito.mute(); else mosquito.unmute();
-  
-  stroke(255,0,0);
-  float thresholdHeight = height - (threshold/1023.0 * height);
-  line (0, thresholdHeight, width, thresholdHeight );
-  
-  delay(250);
-  
+
+  float x = clock.getPosition() * width;
+  line(x, 0, x, height);
+}
+
+void keyPressed() {
+  // Toggle an insect based on key press
+  int index = keys.indexOf(key);
+  if (index >= 0 && index < swarm.insectCount()) {
+    swarm.toggleInsect(index);
+  }
 }
 
