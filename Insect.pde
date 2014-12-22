@@ -8,6 +8,7 @@ class Insect {
   int sampleCount = 0;
   boolean awake = false;
   int port;
+  int stopVotes= 0;
 
   //Constructor
   Insect(int insectPort, String filename) {
@@ -38,6 +39,7 @@ class Insect {
 
   // Only called by user interaction
   void play(float offset) {
+    stopVotes= 0;
     if (this.awake) return;
     
     // Offset to match global clock and play 
@@ -55,16 +57,22 @@ class Insect {
   }
 
   // Only called by user interaction 
-  void stop() {
-    if (!this.awake) return;
+  boolean stop() {
+    if (!this.awake) return true;
     
-    // Start the release envelope
-    adsr.unpatchAfterRelease( out );
-    adsr.noteOff();
+    stopVotes++;
+    if(stopVotes == 4){
+      stopVotes= 0;
+      // Start the release envelope
+      adsr.unpatchAfterRelease( out );
+      adsr.noteOff();
 
-    // Flag insect as inactive 
-    this.awake = false;
-    println("STOP");
+      // Flag insect as inactive 
+      this.awake = false;
+      println("STOP");
+      return true;
+    }
+    return false;
   }
 }
 

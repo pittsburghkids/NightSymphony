@@ -5,7 +5,7 @@ import ddf.minim.*;
 import ddf.minim.ugens.*;
 
 Arduino arduino;
-boolean useArduino = false;
+boolean useArduino = true;
 
 Minim minim;
 AudioOutput out;
@@ -30,8 +30,8 @@ void setup() {
   // Arduino Setup
 
   if (useArduino) {
-    //println(Arduino.list());
-    arduino = new Arduino(this, Arduino.list()[2], 57600);
+    println(Arduino.list());
+    arduino = new Arduino(this, Arduino.list()[0], 57600);
 
     for (int i = 0; i < swarm.insectCount (); i++) {
       arduino.pinMode(swarm.getInsect(i).port, Arduino.INPUT);
