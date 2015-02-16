@@ -23,7 +23,7 @@ class StarManager extends Manager {
 
     // Initialize voices
 
-    voices.add( new Voice(54, 1.00, null) );
+    voices.add( new Voice(2, 1.00, null) );
     voices.add( new Voice(3,  0.75, null) );
     voices.add( new Voice(4,  0.50, null) );
     voices.add( new Voice(5,  0.25, null) );
