@@ -47,17 +47,17 @@ public class Manager {
       if (voices.get(i).isAwake()) {
         
         // Has it been awake long enough?
-        if (millis() - voices.get(i).wakeTime > 500) {
+        if (millis() - voices.get(i).wakeTime > 1000) {
         
           // Does it care about this beat?
           if (voices.get(i).notes[beatCount] > 0) {
   
             float balance = voices.get(i).balance;
             if (!randomize) {
-              this.playSample(i, balance);
+              //this.playSample(i, balance);
             } else {
               int index = voices.get(i).notes[beatCount];
-              this.playSample(index, balance);
+              //this.playSample(index, balance);
             }
             
           }

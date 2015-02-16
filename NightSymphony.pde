@@ -19,7 +19,7 @@ Arduino arduino = null;
 
 void setup() {
 
-  size(640, 480);
+  size(640, 160);
 
   // Sloppy arduino check
   println(Arduino.list());
