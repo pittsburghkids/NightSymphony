@@ -1,0 +1,16 @@
+{
+  "name": "NightSymphony",
+  "version": "1.0.0",
+  "description": "Software for CMoP",
+  "main": "nightsymphony.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "Scott Garner",
+  "license": "ISC",
+  "dependencies": {
+    "arduino-firmata": "^0.3.2",
+    "firmata": "^0.4.0",
+    "timbre": "^14.11.25"
+  }
+}
