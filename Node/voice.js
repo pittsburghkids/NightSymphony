@@ -7,7 +7,8 @@ function Voice (filename) {
   this.awoken = false;
   this.singing = false;
   this.sample = T("audio").loadthis(filename, function() {
-    //this.set({bang: false}).play();
+    //this.set({bang: false})
+    //this.play();
   });
  }
 
@@ -22,6 +23,7 @@ Voice.prototype.awake = function() {
       this.sample.clone().play().on("ended", function() {
         voice.singing = false;
         this.pause();
+        console.log("Played");
       });
   }
 
