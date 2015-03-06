@@ -1,24 +1,22 @@
 var Voice = require("./voice");
 var voices = [
-
-
-    // new Voice("samples/bells/bells.plastic.ff.C5B5001.wav"),
-    // new Voice("samples/bells/bells.plastic.ff.C5B5003.wav"),
-    // new Voice("samples/bells/bells.plastic.ff.C5B5005.wav"),
-    // new Voice("samples/bells/bells.plastic.ff.C5B5006.wav"),
-    // new Voice("samples/bells/bells.plastic.ff.C5B5008.wav"),
-    // new Voice("samples/bells/bells.plastic.ff.C5B5010.wav"),
-    // new Voice("samples/bells/bells.plastic.ff.C5B5012.wav"),
-    // new Voice("samples/bells/bells.plastic.ff.C6B6001.wav"),
-	
 	new Voice("samples/insects/cicada_1.wav"),
 	new Voice("samples/insects/moth.wav"),
 	new Voice("samples/insects/dragonfly_1.wav"),
 	new Voice("samples/insects/cricket_1.wav"),
 	new Voice("samples/insects/cricket_2.wav"),
 	new Voice("samples/insects/dragonfly_2.wav"),
-	//new Voice("samples/insects/cicada_1.wav"),
-	//new Voice("samples/insects/cicada_1.wav"),	
+	new Voice("samples/insects/mosquitos.wav"),
+	new Voice("samples/insects/cicada_2.wav"),	
+
+	new Voice("samples/bells/bells.plastic.ff.C5B5001.wav"),
+	new Voice("samples/bells/bells.plastic.ff.C5B5003.wav"),
+	new Voice("samples/bells/bells.plastic.ff.C5B5005.wav"),
+	new Voice("samples/bells/bells.plastic.ff.C5B5006.wav"),
+	new Voice("samples/bells/bells.plastic.ff.C5B5008.wav"),
+	new Voice("samples/bells/bells.plastic.ff.C5B5010.wav"),
+	new Voice("samples/bells/bells.plastic.ff.C5B5012.wav"),
+	new Voice("samples/bells/bells.plastic.ff.C6B6001.wav"),
 ];
 
 

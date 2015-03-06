@@ -1,20 +1,21 @@
 #include <Firmata.h>
 
-#define INPUT_COUNT 6
+#define INPUT_COUNT 16
 #define BUFFER_LENGTH 3
 #define TARGET_LOOP_TIME 744
 
 #define TRIGGER_CHANGE 0xb0
 
 byte inputPins[INPUT_COUNT] = {
-  //3,4,5,6,7,8,9,10,11,12,
   PIN_TO_DIGITAL(A0), PIN_TO_DIGITAL(A1), PIN_TO_DIGITAL(A2),
-  PIN_TO_DIGITAL(A3), PIN_TO_DIGITAL(A4), PIN_TO_DIGITAL(A5)
+  PIN_TO_DIGITAL(A3), PIN_TO_DIGITAL(A4), PIN_TO_DIGITAL(A5),
+  3,4,5,6,7,8,9,10,11,12
 };
 byte outputPins[INPUT_COUNT] {
-  //NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
-  NULL, NULL, NULL,
-  NULL, NULL, NULL
+  NULL, NULL, NULL, NULL,
+  NULL, NULL, NULL, NULL,
+  NULL, NULL, NULL, NULL,
+  NULL, NULL, NULL, NULL
 };
 
 float fadeUpStep = .2;
@@ -83,8 +84,6 @@ void setup()
     }
 
   }
-
-
 }
 
 
