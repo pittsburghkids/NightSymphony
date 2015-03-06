@@ -6,11 +6,18 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/pittsburghkids/NightSymphony.git"
+  },
   "author": "Scott Garner",
   "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/pittsburghkids/NightSymphony/issues"
+  },
+  "homepage": "https://github.com/pittsburghkids/NightSymphony",
   "dependencies": {
-    "arduino-firmata": "^0.3.2",
     "firmata": "^0.4.0",
-    "timbre": "^14.11.25"
+    "play": "^0.5.0"
   }
 }
