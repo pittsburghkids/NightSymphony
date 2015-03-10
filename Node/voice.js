@@ -9,7 +9,8 @@ function Voice (filename) {
 
 Voice.prototype.awake = function() {
   this.awoken = true;
-  play.sound(this.sample, function(){});
+
+  play.sound(this.sample, function(){ });
 };
 
 Voice.prototype.sleep = function() {
