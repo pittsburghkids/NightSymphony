@@ -1,21 +1,22 @@
 #include <Firmata.h>
 
-#define INPUT_COUNT 16
+#define INPUT_COUNT 6
 #define BUFFER_LENGTH 3
 #define TARGET_LOOP_TIME 744
 
 #define TRIGGER_CHANGE 0xb0
 
+byte dipPins[4] {
+  PIN_TO_DIGITAL(A1), PIN_TO_DIGITAL(A2), PIN_TO_DIGITAL(A3), PIN_TO_DIGITAL(A4)
+};
+
 byte inputPins[INPUT_COUNT] = {
-  PIN_TO_DIGITAL(A0), PIN_TO_DIGITAL(A1), PIN_TO_DIGITAL(A2),
-  PIN_TO_DIGITAL(A3), PIN_TO_DIGITAL(A4), PIN_TO_DIGITAL(A5),
-  2,4,5,6,7,8,9,10,11,12
+  8, 4, PIN_TO_DIGITAL(A5),
+  12, 7, 2
 };
 byte outputPins[INPUT_COUNT] {
-  3, NULL, NULL, NULL,
-  NULL, NULL, NULL, NULL,
-  NULL, NULL, NULL, NULL,
-  NULL, NULL, NULL, NULL
+  10, 6, 3,
+  11, 9, 5
 };
 
 float fadeUpStep = .2;
@@ -65,7 +66,6 @@ void setup()
 
 
   Firmata.setFirmwareVersion(FIRMATA_MAJOR_VERSION, FIRMATA_MINOR_VERSION);
-  Firmata.attach(START_SYSEX, sysexCallback);
   Firmata.begin(57600);
 
   for (int i = 0; i < INPUT_COUNT; i++)
@@ -84,8 +84,23 @@ void setup()
     }
 
   }
+
+  // DIP Setup
+
+  for (int i = 0; i < 4; i++) {
+    pinMode(dipPins[i], INPUT);
+    digitalWrite(dipPins[i], HIGH);
+  }
+
 }
 
+int address() {
+  int address = 0;
+  for (int i = 0; i < 4; i++) {
+    address = (address << 1) | digitalRead(dipPins[i]);
+  }
+  return address;
+}
 
 void loop() {
 
@@ -132,7 +147,7 @@ void updateBuffers() {
 
 void updateStates() {
 
-  byte returnData[3];
+  byte returnData[4];
 
   for (int i = 0; i < INPUT_COUNT; i++) {
 
@@ -140,11 +155,12 @@ void updateStates() {
       if (inputs[i].bufferSum < releaseThreshold) {
         inputs[i].pressed = false;
 
-        returnData[0] = (byte) i;
-        returnData[1] = (byte) inputs[i].pinNumber;
-        returnData[2] = (byte) 0;
+        returnData[0] = (byte) address();
+        returnData[1] = (byte) i;
+        returnData[2] = (byte) inputs[i].pinNumber;
+        returnData[3] = (byte) 0;
 
-        Firmata.sendSysex(TRIGGER_CHANGE, 3, returnData);
+        Firmata.sendSysex(TRIGGER_CHANGE, 4, returnData);
 
         inputs[i].fadeTarget = 0;
       }
@@ -155,11 +171,12 @@ void updateStates() {
       if (inputs[i].bufferSum > pressThreshold) { // input becomes pressed
         inputs[i].pressed = true;
 
-        returnData[0] = (byte) i;
-        returnData[1] = (byte) inputs[i].pinNumber;
-        returnData[2] = (byte) 1;
+        returnData[0] = (byte) address();
+        returnData[1] = (byte) i;
+        returnData[2] = (byte) inputs[i].pinNumber;
+        returnData[3] = (byte) 1;
 
-        Firmata.sendSysex(TRIGGER_CHANGE, 3, returnData);
+        Firmata.sendSysex(TRIGGER_CHANGE, 4, returnData);
 
         inputs[i].fadeTarget = 255;
 
@@ -215,30 +232,3 @@ void forceDelay() {
 }
 
 
-
-
-
-void sysexCallback(byte command, byte argc, byte*argv)
-{
-  switch(command){
-  case 0x01: // LED Blink Command
-    if(argc < 3) break;
-    byte blink_pin;
-    byte blink_count;
-    int delayTime;
-    blink_pin = argv[0];
-    blink_count = argv[1];
-    delayTime = argv[2] * 100;
-
-    pinMode(blink_pin, OUTPUT);
-    byte i;
-    for(i = 0; i < blink_count; i++){
-      digitalWrite(blink_pin, true);
-      delay(delayTime);
-      digitalWrite(blink_pin, false);
-      delay(delayTime);
-    }
-    Firmata.sendSysex(command, argc, argv); // callback
-    break;
-  }
-}
