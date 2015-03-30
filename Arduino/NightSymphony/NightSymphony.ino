@@ -7,7 +7,7 @@
 #define TRIGGER_CHANGE 0xb0
 
 byte dipPins[4] {
-  PIN_TO_DIGITAL(A1), PIN_TO_DIGITAL(A2), PIN_TO_DIGITAL(A3), PIN_TO_DIGITAL(A4)
+  PIN_TO_DIGITAL(A4), PIN_TO_DIGITAL(A3), PIN_TO_DIGITAL(A2), PIN_TO_DIGITAL(A1)
 };
 
 byte inputPins[INPUT_COUNT] = {
@@ -97,7 +97,7 @@ void setup()
 int address() {
   int address = 0;
   for (int i = 0; i < 4; i++) {
-    address = (address << 1) | digitalRead(dipPins[i]);
+    address = (address << 1) | !digitalRead(dipPins[i]);
   }
   return address;
 }
