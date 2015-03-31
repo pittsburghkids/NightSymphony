@@ -33,6 +33,7 @@ typedef struct {
   byte buffer[BUFFER_LENGTH];
   byte bufferSum;
   boolean pressed;
+  boolean active;
 }
 Input;
 
@@ -73,7 +74,8 @@ void setup()
     // Input Pins
 
     pinMode(inputPins[i], INPUT);
-
+    digitalWrite(inputPins[i], HIGH);
+    
     // Setup Inputs
 
     inputs[i].pinNumber = inputPins[i];
@@ -81,6 +83,14 @@ void setup()
     inputs[i].pressed = false;
     for (int j = 0; j < BUFFER_LENGTH; j++) {
       inputs[i].buffer[j] = 0;
+    }
+
+    // Do we need a delay here?
+     
+    if (digitalRead(inputPins[i]) == LOW) {
+      inputs[i].active = true;
+    } else {
+      inputs[i].active = false;
     }
 
   }
@@ -121,6 +131,8 @@ void loop() {
 void updateBuffers() {
 
   for (int i = 0; i < INPUT_COUNT; i++) {
+    if (inputs[i].active == false) continue;
+    
     byte currentByte = inputs[i].buffer[byteIndex];
 
     int currentValue = digitalRead(inputs[i].pinNumber);
@@ -151,6 +163,8 @@ void updateStates() {
 
   for (int i = 0; i < INPUT_COUNT; i++) {
 
+    if (inputs[i].active == false) continue;
+    
     if (inputs[i].pressed) {
       if (inputs[i].bufferSum < releaseThreshold) {
         inputs[i].pressed = false;
