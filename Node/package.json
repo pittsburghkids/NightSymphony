@@ -18,6 +18,6 @@
   "homepage": "https://github.com/pittsburghkids/NightSymphony",
   "dependencies": {
     "firmata": "^0.4.0",
-    "play": "^0.5.0",
+    "play": "^0.5.0"
   }
 }
