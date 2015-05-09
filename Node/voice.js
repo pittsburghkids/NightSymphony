@@ -1,6 +1,11 @@
 "use strict";
 
 var play = require('play');
+play.playerList = [
+  'mplayer',
+  'afplay',
+  'play'
+];
 
 function Voice (filename) {
   this.awoken = false;
