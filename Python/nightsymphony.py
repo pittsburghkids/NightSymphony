@@ -15,6 +15,7 @@ pygame.mixer.set_num_channels(16);
 Voices = {}
 
 Voices[(0,0)] = pygame.mixer.Sound('samples/bells/bells.plastic.ff.C5B5001.wav')
+Voices[(1,0)] = pygame.mixer.Sound('samples/bells/bells.plastic.ff.C5B5001.wav')
 Voices[(1,5)] = pygame.mixer.Sound('samples/bells/bells.plastic.ff.C5B5003.wav')
 
 # Board Setup
