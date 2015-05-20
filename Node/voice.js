@@ -1,21 +1,19 @@
 "use strict";
 
-var play = require('play');
-play.playerList = [
-  'mplayer',
-  'afplay',
-  'play'
-];
+var T = require("timbre");
 
 function Voice (filename) {
   this.awoken = false;
-  this.sample = filename;
+  this.sample = T("audio", {}).loadthis(filename);
 }
 
 Voice.prototype.awake = function() {
   this.awoken = true;
 
-  play.sound(this.sample, function(){ });
+  this.sample.clone().play().on("ended", function() {
+    this.pause();
+  });
+
 };
 
 Voice.prototype.sleep = function() {
