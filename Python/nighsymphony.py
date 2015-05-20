@@ -15,13 +15,9 @@ pygame.mixer.set_num_channels(16);
 Voices = {}
 
 Voices[(0,0)] = pygame.mixer.Sound('samples/bells/bells.plastic.ff.C5B5001.wav')
-
 Voices[(1,5)] = pygame.mixer.Sound('samples/bells/bells.plastic.ff.C5B5003.wav')
 
 # Board Setup
-
-pyfirmata.BOARD_SETUP_WAIT_TIME=1
-print pyfirmata.BOARD_SETUP_WAIT_TIME
 
 layout =  {
         'digital': tuple(x for x in range(14)),
@@ -51,7 +47,7 @@ class MyBoard(pyfirmata.Board):
 
 ports = glob.glob('/dev/ttyACM*') + glob.glob('/dev/cu.usbmodem*')
 for port in ports:
-	print "New Board"
+	print "New Board: " + port
 	my_board = MyBoard(port, None)
 	my_board.add_cmd_handler(0xb0, my_board._handle_trigger)
 	it = pyfirmata.util.Iterator(my_board)
