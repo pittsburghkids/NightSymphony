@@ -4,7 +4,9 @@
 #define BUFFER_LENGTH 3
 #define TARGET_LOOP_TIME 744
 
+#define SELF_IDENTIFY 0xa0
 #define TRIGGER_CHANGE 0xb0
+
 
 byte dipPins[4] {
   PIN_TO_DIGITAL(A4), PIN_TO_DIGITAL(A3), PIN_TO_DIGITAL(A2), PIN_TO_DIGITAL(A1)
@@ -64,7 +66,7 @@ Input inputs[INPUT_COUNT];
 
 void setup()
 {
-
+  pinMode(13, OUTPUT);
 
   Firmata.setFirmwareVersion(FIRMATA_MAJOR_VERSION, FIRMATA_MINOR_VERSION);
   Firmata.begin(57600);
@@ -101,15 +103,10 @@ void setup()
     pinMode(dipPins[i], INPUT);
     digitalWrite(dipPins[i], HIGH);
   }
+  
+  // Self Identify
 
-}
-
-int address() {
-  int address = 0;
-  for (int i = 0; i < 4; i++) {
-    address = (address << 1) | !digitalRead(dipPins[i]);
-  }
-  return address;
+  identify();
 }
 
 void loop() {
@@ -122,6 +119,30 @@ void loop() {
   updateStates();
   updateIndices();
   forceDelay();
+}
+
+//
+// Self-Identify
+//
+
+void identify() {
+  byte returnData[1];
+  
+   returnData[0] = (byte) address();
+   
+    Firmata.sendSysex(SELF_IDENTIFY, 1, returnData);
+}
+
+//
+// Get DIP address
+//
+
+int address() {
+  int address = 0;
+  for (int i = 0; i < 4; i++) {
+    address = (address << 1) | !digitalRead(dipPins[i]);
+  }
+  return address;
 }
 
 //
