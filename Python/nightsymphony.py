@@ -28,6 +28,9 @@ Voices = {}
 Voices[(0,0)] = Voice('samples/bells/bells.plastic.ff.C5B5001.wav')
 Voices[(1,0)] = Voice('samples/bells/bells.plastic.ff.C5B5002.wav')
 Voices[(2,0)] = Voice('samples/bells/bells.plastic.ff.C5B5003.wav')
+Voices[(3,0)] = Voice('samples/bells/bells.plastic.ff.C5B5004.wav')
+Voices[(4,0)] = Voice('samples/bells/bells.plastic.ff.C5B5005.wav')
+Voices[(5,0)] = Voice('samples/bells/bells.plastic.ff.C5B5006.wav')
 
 #
 # Board Setup
