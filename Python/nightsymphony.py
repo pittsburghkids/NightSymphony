@@ -17,20 +17,31 @@ pygame.mixer.set_num_channels(16);
 # 
 
 class Voice():
-	def __init__(self, samplePath):
+	def __init__(self, id, samplePath):
 		self.samplePath = samplePath
+		self.channel = pygame.mixer.Channel(id);
 		self.sample = pygame.mixer.Sound(samplePath);
 	def play(self):
-		self.sample.play();
+		self.channel.play(self.sample);
+	def isPlaying(self):
+		return self.channel.get_busy();
 
-Voices = {}
+voices = {}
 
-Voices[(0,0)] = Voice('samples/bells/bells.plastic.ff.C5B5001.wav')
-Voices[(1,0)] = Voice('samples/bells/bells.plastic.ff.C5B5002.wav')
-Voices[(2,0)] = Voice('samples/bells/bells.plastic.ff.C5B5003.wav')
-Voices[(3,0)] = Voice('samples/bells/bells.plastic.ff.C5B5004.wav')
-Voices[(4,0)] = Voice('samples/bells/bells.plastic.ff.C5B5005.wav')
-Voices[(5,0)] = Voice('samples/bells/bells.plastic.ff.C5B5006.wav')
+voices[(0,0)] = Voice(0, 'samples/bells/bells.plastic.ff.C5B5001.wav')
+voices[(1,0)] = Voice(0, 'samples/bells/bells.plastic.ff.C5B5002.wav')
+voices[(2,0)] = Voice(0, 'samples/bells/bells.plastic.ff.C5B5003.wav')
+voices[(3,0)] = Voice(0, 'samples/bells/bells.plastic.ff.C5B5004.wav')
+voices[(4,0)] = Voice(0, 'samples/bells/bells.plastic.ff.C5B5005.wav')
+voices[(5,0)] = Voice(0, 'samples/bells/bells.plastic.ff.C5B5006.wav')
+voices[(6,0)] = Voice(0, 'samples/bells/bells.plastic.ff.C5B5007.wav')
+
+#
+# Board Containers
+#
+
+
+boards = list()
 
 #
 # Board Setup
@@ -40,12 +51,22 @@ class CustomBoard(pyfirmata.Board):
 	def __init__(self, port, layout=None, baudrate=57600, name=None, timeout=None):
 		self.sp = serial.Serial(port, baudrate, timeout=timeout)
 		self.name = name
+		self.isMoon = False;
 		if not self.name:
 			self.name = port		
 
 	def _handle_identify(self, *data):
 		address = data[0];
 		print "Board Identified: " + str(address)
+		print "On Port: " + str(self.sp.port)
+
+		if address == 16:
+			print "Moon detected"
+			self.isMoon = True;
+
+	def _handle_echo(self, *data):
+		print "ECHO"
+		print data
 
 	def _handle_trigger(self, *data):
 		address = data[0];
@@ -53,8 +74,8 @@ class CustomBoard(pyfirmata.Board):
 		pin = data[4];
 		status = data[6];
 		print data
-		if (status == 1 and (address,id) in Voices):
-			Voices[address,id].play();
+		if (status == 1 and (address,id) in voices):
+			voices[address,id].play();
 
 #
 # Board Detection
@@ -62,24 +83,50 @@ class CustomBoard(pyfirmata.Board):
 
 print "Detecting Boards"
 
-boards = list()
 ports = glob.glob('/dev/ttyACM*') + glob.glob('/dev/cu.usbmodem*')
 for port in ports:
 	print "New Board: " + port
 	newBoard = CustomBoard(port, None)
 	newBoard.add_cmd_handler(0xb0, newBoard._handle_trigger)
 	newBoard.add_cmd_handler(0xa0, newBoard._handle_identify)
+	newBoard.add_cmd_handler(0xa2, newBoard._handle_echo)
 	boards.append(newBoard);
 
 #
 # Main Loop
 #
 
+activeVoiceCount = 0
+lastActiveVoiceCount = 0
+
 while True:
+
+	# Process Voices
+
+	activeVoiceCount = 0
+
+	for key, voice in voices.iteritems():
+		if voice.isPlaying():
+			activeVoiceCount += 1
 
 	# Process Board Data
 
 	for board in boards:
+
+		# Process input
+
 		while board.bytes_available():
 			board.iterate();
-		time.sleep(0.001);
+
+		# Handle the moon
+
+		if board.isMoon:
+			if (activeVoiceCount != lastActiveVoiceCount):
+				dataOut = bytearray([activeVoiceCount, len(voices)])
+				boards[0].send_sysex(0xa1, dataOut)			
+		
+		# Quick sleep
+
+		time.sleep(0.001);	
+
+	lastActiveVoiceCount = activeVoiceCount

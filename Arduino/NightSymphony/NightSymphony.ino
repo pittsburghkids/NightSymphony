@@ -22,20 +22,28 @@ byte outputPins[INPUT_COUNT] {
 };
 
 float fadeUpStep = .2;
-float fadeDownStep = .1;
+float fadeDownStep = .2;
+
+float maxBrightness = 96;
+float minBrightness = 6;
 
 typedef struct {
   byte pinNumber;
 
   byte ledPin;
 
-  float fadeValue = 0;
-  float fadeTarget = 0;
+  float currentBrightness = 0;
+  float releasedBrightness = 0;
+  float pressedBrightness = 0;
 
   byte buffer[BUFFER_LENGTH];
   byte bufferSum;
   boolean pressed;
   boolean active;
+  
+  unsigned long pressedTime;
+  unsigned long releasedTime;
+  
 }
 Input;
 
@@ -83,6 +91,7 @@ void setup()
     inputs[i].pinNumber = inputPins[i];
     inputs[i].ledPin = outputPins[i];
     inputs[i].pressed = false;
+    
     for (int j = 0; j < BUFFER_LENGTH; j++) {
       inputs[i].buffer[j] = 0;
     }
@@ -189,6 +198,8 @@ void updateStates() {
     if (inputs[i].pressed) {
       if (inputs[i].bufferSum < releaseThreshold) {
         inputs[i].pressed = false;
+        inputs[i].releasedTime = millis();
+        inputs[i].releasedBrightness = inputs[i].currentBrightness;
 
         returnData[0] = (byte) address();
         returnData[1] = (byte) i;
@@ -197,7 +208,6 @@ void updateStates() {
 
         Firmata.sendSysex(TRIGGER_CHANGE, 4, returnData);
 
-        inputs[i].fadeTarget = 0;
       }
 
     }
@@ -205,6 +215,8 @@ void updateStates() {
 
       if (inputs[i].bufferSum > pressThreshold) { // input becomes pressed
         inputs[i].pressed = true;
+        inputs[i].pressedTime = millis();
+        inputs[i].pressedBrightness = inputs[i].currentBrightness;
 
         returnData[0] = (byte) address();
         returnData[1] = (byte) i;
@@ -213,24 +225,42 @@ void updateStates() {
 
         Firmata.sendSysex(TRIGGER_CHANGE, 4, returnData);
 
-        inputs[i].fadeTarget = 255;
 
       }
     }
 
     if (inputs[i].ledPin != NULL) {
-      if (inputs[i].fadeValue != inputs[i].fadeTarget) {
-        if (inputs[i].fadeValue < inputs[i].fadeTarget) {
-          inputs[i].fadeValue = constrain(inputs[i].fadeValue + fadeUpStep, 0, 255);
-          analogWrite(inputs[i].ledPin, inputs[i].fadeValue);
+            
+      if (inputs[i].pressed) {
+        
+        unsigned long elapsed = millis() - inputs[i].pressedTime;
+        
+        if (elapsed < 10) {
+          int value = map( elapsed, 0, 10, inputs[i].pressedBrightness, maxBrightness);          
+          inputs[i].currentBrightness = value;
+          analogWrite(inputs[i].ledPin, value);
+        } else if (elapsed < 750) {
+          int value = map( elapsed, 10, 750, maxBrightness, minBrightness);
+          inputs[i].currentBrightness = value;
+          analogWrite(inputs[i].ledPin, value);          
+        } else {
+          inputs[i].currentBrightness = minBrightness;
+          analogWrite(inputs[i].ledPin, minBrightness);          
         }
-
-        if (inputs[i].fadeValue > inputs[i].fadeTarget) {
-          inputs[i].fadeValue = constrain(inputs[i].fadeValue - fadeDownStep, 0, 255);
-          analogWrite(inputs[i].ledPin, inputs[i].fadeValue);
-        }
+        
+      } else {
+        
+        unsigned long elapsed = millis() - inputs[i].releasedTime;
+        
+        if (elapsed < 250) {
+          int value = map( elapsed, 0, 250, inputs[i].releasedBrightness, 0.0);          
+          inputs[i].currentBrightness = value;
+          analogWrite(inputs[i].ledPin, value);
+        } else {
+          inputs[i].currentBrightness = 0;
+          analogWrite(inputs[i].ledPin, 0);
+        } 
       }
-
     }
   }
 }
