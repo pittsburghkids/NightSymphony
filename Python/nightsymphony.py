@@ -10,7 +10,7 @@ import glob
 
 pygame.mixer.pre_init(44100, -16, 2, 4096)
 pygame.init()
-pygame.mixer.set_num_channels(16);
+pygame.mixer.set_num_channels(18);
 
 #
 # Voices
@@ -51,7 +51,6 @@ voices[(4,0)] = Voice(14, 'samples/insects/mosquito_3.wav')
 voices[(4,1)] = Voice(15, 'samples/insects/cidada.wav')
 voices[(4,2)] = Voice(16, 'samples/bells/bells.plastic.ff.C5B5008.wav')
 voices[(4,3)] = Voice(17, 'samples/bells/bells.plastic.ff.C5B5006.wav')
-
 
 
 #
