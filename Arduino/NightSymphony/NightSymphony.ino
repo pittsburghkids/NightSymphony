@@ -6,6 +6,7 @@
 
 #define SELF_IDENTIFY 0xa0
 #define TRIGGER_CHANGE 0xb0
+#define SET_BRIGHTNESS 0xa1
 
 
 byte dipPins[4] {
@@ -40,10 +41,10 @@ typedef struct {
   byte bufferSum;
   boolean pressed;
   boolean active;
-  
+
   unsigned long pressedTime;
   unsigned long releasedTime;
-  
+
 }
 Input;
 
@@ -72,6 +73,38 @@ int releaseThreshold = int(13.2 - 1.5);
 
 Input inputs[INPUT_COUNT];
 
+// Moon
+
+int minMoonBrightness = 8;
+int maxMoonBrightness = 255;
+
+float currentMoonBrightness = 0;
+float targetMoonBrightness = minMoonBrightness;
+
+// Sysex Hanlder
+
+void sysexCallback(byte command, byte argc, byte *argv)
+{
+
+  //Firmata.sendSysex(0xa2, argc, argv);
+
+  switch (command) {
+    case SET_BRIGHTNESS:
+
+
+      int activeVoices = argv[0];
+      int totalVoices = argv[1];
+
+      int value = ((maxMoonBrightness - minMoonBrightness) * ((float)activeVoices / (float)totalVoices)) + minMoonBrightness;
+
+      targetMoonBrightness = value;
+
+      break;
+  }
+}
+
+// Setup
+
 void setup()
 {
   pinMode(13, OUTPUT);
@@ -85,19 +118,19 @@ void setup()
 
     pinMode(inputPins[i], INPUT);
     digitalWrite(inputPins[i], HIGH);
-    
+
     // Setup Inputs
 
     inputs[i].pinNumber = inputPins[i];
     inputs[i].ledPin = outputPins[i];
     inputs[i].pressed = false;
-    
+
     for (int j = 0; j < BUFFER_LENGTH; j++) {
       inputs[i].buffer[j] = 0;
     }
 
     // Do we need a delay here?
-     
+
     if (digitalRead(inputPins[i]) == LOW) {
       inputs[i].active = true;
     } else {
@@ -112,10 +145,15 @@ void setup()
     pinMode(dipPins[i], INPUT);
     digitalWrite(dipPins[i], HIGH);
   }
-  
+
+  // Sysex
+
+  Firmata.attach(START_SYSEX, sysexCallback);
+
   // Self Identify
 
   identify();
+
 }
 
 void loop() {
@@ -127,6 +165,9 @@ void loop() {
   updateBuffers();
   updateStates();
   updateIndices();
+
+  lightMoon();
+
   forceDelay();
 }
 
@@ -136,10 +177,10 @@ void loop() {
 
 void identify() {
   byte returnData[1];
-  
-   returnData[0] = (byte) address();
-   
-    Firmata.sendSysex(SELF_IDENTIFY, 1, returnData);
+
+  returnData[0] = (byte) address();
+
+  Firmata.sendSysex(SELF_IDENTIFY, 1, returnData);
 }
 
 //
@@ -162,7 +203,7 @@ void updateBuffers() {
 
   for (int i = 0; i < INPUT_COUNT; i++) {
     if (inputs[i].active == false) continue;
-    
+
     byte currentByte = inputs[i].buffer[byteIndex];
 
     int currentValue = digitalRead(inputs[i].pinNumber);
@@ -194,7 +235,7 @@ void updateStates() {
   for (int i = 0; i < INPUT_COUNT; i++) {
 
     if (inputs[i].active == false) continue;
-    
+
     if (inputs[i].pressed) {
       if (inputs[i].bufferSum < releaseThreshold) {
         inputs[i].pressed = false;
@@ -230,36 +271,36 @@ void updateStates() {
     }
 
     if (inputs[i].ledPin != NULL) {
-            
+
       if (inputs[i].pressed) {
-        
+
         unsigned long elapsed = millis() - inputs[i].pressedTime;
-        
+
         if (elapsed < 10) {
-          int value = map( elapsed, 0, 10, inputs[i].pressedBrightness, maxBrightness);          
+          int value = map( elapsed, 0, 10, inputs[i].pressedBrightness, maxBrightness);
           inputs[i].currentBrightness = value;
           analogWrite(inputs[i].ledPin, value);
         } else if (elapsed < 750) {
           int value = map( elapsed, 10, 750, maxBrightness, minBrightness);
           inputs[i].currentBrightness = value;
-          analogWrite(inputs[i].ledPin, value);          
+          analogWrite(inputs[i].ledPin, value);
         } else {
           inputs[i].currentBrightness = minBrightness;
-          analogWrite(inputs[i].ledPin, minBrightness);          
+          analogWrite(inputs[i].ledPin, minBrightness);
         }
-        
+
       } else {
-        
+
         unsigned long elapsed = millis() - inputs[i].releasedTime;
-        
+
         if (elapsed < 250) {
-          int value = map( elapsed, 0, 250, inputs[i].releasedBrightness, 0.0);          
+          int value = map( elapsed, 0, 250, inputs[i].releasedBrightness, 0.0);
           inputs[i].currentBrightness = value;
           analogWrite(inputs[i].ledPin, value);
         } else {
           inputs[i].currentBrightness = 0;
           analogWrite(inputs[i].ledPin, 0);
-        } 
+        }
       }
     }
   }
@@ -278,6 +319,32 @@ void updateIndices() {
     if (byteIndex == BUFFER_LENGTH) {
       byteIndex = 0;
     }
+  }
+}
+
+//
+// Unused ports handle moon message
+//
+
+
+void lightMoon() {
+
+
+  if (currentMoonBrightness != targetMoonBrightness) {
+
+    if (abs(currentMoonBrightness - targetMoonBrightness) < 1) currentMoonBrightness = targetMoonBrightness;
+
+    if (currentMoonBrightness < targetMoonBrightness) {
+      currentMoonBrightness += .5;
+    } else if (currentMoonBrightness > targetMoonBrightness) {
+      currentMoonBrightness -= .1;
+    }
+
+    for (int i = 0; i < INPUT_COUNT; i++) {
+      if (inputs[i].active != false) continue;
+      analogWrite(inputs[i].ledPin, currentMoonBrightness);
+    }
+    
   }
 }
 

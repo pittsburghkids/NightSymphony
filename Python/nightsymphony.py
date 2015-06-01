@@ -52,6 +52,7 @@ voices[(4,1)] = Voice(15, 'samples/insects/cidada.wav')
 voices[(4,2)] = Voice(16, 'samples/bells/bells.plastic.ff.C5B5008.wav')
 voices[(4,3)] = Voice(17, 'samples/bells/bells.plastic.ff.C5B5006.wav')
 
+moonBoard = 2;
 
 #
 # Board Containers
@@ -86,7 +87,7 @@ class CustomBoard(pyfirmata.Board):
     print "Board Identified: " + str(address)
     print self
 
-    if address == 16:
+    if address == moonBoard:
       print "Moon detected"
       self.isMoon = True;
 
