@@ -29,28 +29,28 @@ class Voice():
 
 voices = {}
 
-voices[(0,0)] = Voice(0, 'samples/bells/bells.plastic.ff.C6B6006.wav')
-voices[(0,1)] = Voice(1, 'samples/insects/moth.wav')
-voices[(0,2)] = Voice(2, 'samples/bells/bells.plastic.ff.C6B6001.wav')
+voices[(0,5)] = Voice(0, 'samples/bells/bells.plastic.ff.C6B6006.wav')
+voices[(0,0)] = Voice(1, 'samples/insects/moth.wav')
+voices[(0,3)] = Voice(2, 'samples/bells/bells.plastic.ff.C6B6005.wav')
+voices[(0,4)] = Voice(3, 'samples/insects/spittle.wav')
 
-voices[(1,0)] = Voice(3, 'samples/bells/bells.plastic.ff.C6B6005.wav')
-voices[(1,1)] = Voice(4, 'samples/insects/spittle.wav')
-voices[(1,2)] = Voice(5, 'samples/bells/bells.plastic.ff.C6B6003.wav')
-voices[(1,3)] = Voice(6, 'samples/bells/bells.plastic.ff.C5B5011.wav')
+voices[(1,2)] = Voice(4, 'samples/bells/bells.plastic.ff.C6B6001.wav')
+voices[(1,0)] = Voice(5, 'samples/bells/bells.plastic.ff.C6B6003.wav')
+voices[(1,1)] = Voice(6, 'samples/bells/bells.plastic.ff.C5B5011.wav')
 
 voices[(2,0)] = Voice(7, 'samples/insects/cricket_1.wav')
 voices[(2,1)] = Voice(8, 'samples/insects/cricket_2.wav')
 
-voices[(3,0)] = Voice(9, 'samples/bells/bells.plastic.ff.C5B5010.wav')
-voices[(3,1)] = Voice(10, 'samples/insects/dragonfly.wav')
-voices[(3,2)] = Voice(11, 'samples/insects/mosquito_1.wav')
-voices[(3,3)] = Voice(12, 'samples/insects/bee.wav')
-voices[(3,4)] = Voice(13, 'samples/insects/mosquito_2.wav')
+voices[(3,4)] = Voice(9, 'samples/bells/bells.plastic.ff.C5B5010.wav')
+voices[(3,5)] = Voice(10, 'samples/insects/dragonfly.wav')
+voices[(3,1)] = Voice(11, 'samples/insects/mosquito_1.wav')
+voices[(3,0)] = Voice(12, 'samples/insects/bee.wav')
+voices[(3,3)] = Voice(13, 'samples/insects/mosquito_2.wav')
 
-voices[(4,0)] = Voice(14, 'samples/insects/mosquito_3.wav')
-voices[(4,1)] = Voice(15, 'samples/insects/cidada.wav')
-voices[(4,2)] = Voice(16, 'samples/bells/bells.plastic.ff.C5B5008.wav')
-voices[(4,3)] = Voice(17, 'samples/bells/bells.plastic.ff.C5B5006.wav')
+voices[(4,0)] = Voice(14, 'samples/bells/bells.plastic.ff.C5B5008.wav')
+voices[(4,3)] = Voice(15, 'samples/insects/cicada.wav')
+voices[(4,1)] = Voice(16, 'samples/bells/bells.plastic.ff.C5B5006.wav')
+voices[(4,4)] = Voice(17, 'samples/insects/mosquito_3.wav')
 
 moonBoard = 2;
 
