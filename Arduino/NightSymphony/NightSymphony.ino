@@ -338,7 +338,7 @@ void lightMoon() {
 
     if (abs(currentMoonBrightness - targetMoonBrightness) < 1) currentMoonBrightness = targetMoonBrightness;
 
-    currentMoonBrightness = currentMoonBrightness + ( (targetMoonBrightness - currentMoonBrightness) * .005);
+    currentMoonBrightness = currentMoonBrightness + ( (targetMoonBrightness - currentMoonBrightness) * .0025);
 
     for (int i = 0; i < INPUT_COUNT; i++) {
       if (inputs[i].active != false) continue;
