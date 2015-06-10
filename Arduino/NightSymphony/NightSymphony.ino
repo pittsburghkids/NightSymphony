@@ -155,6 +155,7 @@ void setup()
 
   // Self Identify
 
+  delay(1000);
   identify();
 
 }
