@@ -8,7 +8,7 @@ import glob
 # Sound Setup
 # 
 
-pygame.mixer.pre_init(44100, -16, 2, 4096)
+pygame.mixer.pre_init(44100, -16, 2, 512)
 pygame.init()
 pygame.mixer.set_num_channels(18);
 
@@ -21,9 +21,11 @@ class Voice():
     self.samplePath = samplePath
     self.channel = pygame.mixer.Channel(id);
     self.sample = pygame.mixer.Sound(samplePath);
+    self.triggered = False;
   def play(self):
     print self.samplePath
     self.channel.play(self.sample);
+    self.triggered = True;
   def isPlaying(self):
     return self.channel.get_busy();
 
@@ -52,7 +54,7 @@ voices[(4,3)] = Voice(15, 'samples/insects/cicada.wav')
 voices[(4,1)] = Voice(16, 'samples/bells/bells.plastic.ff.C5B5006.wav')
 voices[(4,4)] = Voice(17, 'samples/insects/mosquito_3.wav')
 
-moonBoard = 2;
+moonBoard = 5;
 
 #
 # Board Containers
@@ -123,18 +125,19 @@ for port in ports:
 # Main Loop
 #
 
-activeVoiceCount = 0
-lastActiveVoiceCount = 0
-
 while True:
 
   # Process Voices
 
-  activeVoiceCount = 0
+  newVoice = False;
+  activeVoiceCount = 0;
 
   for key, voice in voices.iteritems():
+    if voice.triggered:
+      newVoice = True;
+      voice.triggered = False;
     if voice.isPlaying():
-      activeVoiceCount += 1
+      activeVoiceCount += 1;
 
   # Process Board Data
 
@@ -148,12 +151,11 @@ while True:
     # Handle the moon
 
     if board.isMoon:
-      if (activeVoiceCount != lastActiveVoiceCount):
+      if (newVoice):
         dataOut = bytearray([activeVoiceCount, len(voices)])
-        boards[0].send_sysex(0xa1, dataOut)     
+        board.send_sysex(0xa1, dataOut)     
     
     # Quick sleep
 
     time.sleep(0.001);  
 
-  lastActiveVoiceCount = activeVoiceCount

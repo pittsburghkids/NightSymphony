@@ -75,11 +75,13 @@ Input inputs[INPUT_COUNT];
 
 // Moon
 
-int minMoonBrightness = 8;
-int maxMoonBrightness = 255;
+float minMoonBrightness = 10;
+float maxMoonBrightness = 255;
 
 float currentMoonBrightness = 0;
 float targetMoonBrightness = minMoonBrightness;
+
+int lastActiveVoices = 0;
 
 // Sysex Hanlder
 
@@ -93,11 +95,12 @@ void sysexCallback(byte command, byte argc, byte *argv)
 
 
       int activeVoices = argv[0];
-      int totalVoices = argv[1];
 
-      int value = ((maxMoonBrightness - minMoonBrightness) * ((float)activeVoices / (float)totalVoices)) + minMoonBrightness;
+      float newBrightness = ((maxMoonBrightness - minMoonBrightness) *  constrain( (float)activeVoices / 4.0 , 0.0, 1.0)) + minMoonBrightness;
+      
+      if (newBrightness > currentMoonBrightness) currentMoonBrightness = newBrightness;
 
-      targetMoonBrightness = value;
+      lastActiveVoices = activeVoices;
 
       break;
   }
@@ -334,11 +337,7 @@ void lightMoon() {
 
     if (abs(currentMoonBrightness - targetMoonBrightness) < 1) currentMoonBrightness = targetMoonBrightness;
 
-    if (currentMoonBrightness < targetMoonBrightness) {
-      currentMoonBrightness += .5;
-    } else if (currentMoonBrightness > targetMoonBrightness) {
-      currentMoonBrightness -= .1;
-    }
+    currentMoonBrightness = currentMoonBrightness + ( (targetMoonBrightness - currentMoonBrightness) * .005);
 
     for (int i = 0; i < INPUT_COUNT; i++) {
       if (inputs[i].active != false) continue;
