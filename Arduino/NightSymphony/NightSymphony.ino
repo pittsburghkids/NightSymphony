@@ -324,11 +324,8 @@ void updateIndices() {
 
 void lightMoon() {
 
-//  if (abs(currentMoonBrightness - targetMoonBrightness) <= 1) {
-//    currentMoonBrightness = targetMoonBrightness;
-//  } else {
 
-    //currentMoonBrightness = currentMoonBrightness + ( (targetMoonBrightness - currentMoonBrightness) * .0025);
+  if (currentMoonBrightness != targetMoonBrightness) {
 
     if (currentMoonBrightness > targetMoonBrightness) {
       targetMoonBrightness = minMoonBrightness;
@@ -345,7 +342,8 @@ void lightMoon() {
       analogWrite(inputs[i].ledPin,  constrain(currentMoonBrightness, minMoonBrightness, 255));
     }
 
-//  }
+  }
+  
 }
 
 //
