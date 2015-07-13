@@ -75,11 +75,13 @@ Input inputs[INPUT_COUNT];
 
 // Moon
 
-float minMoonBrightness = 24;
+float minMoonBrightness = 20;
 //float maxMoonBrightness = 255;
 
 float currentMoonBrightness = 0;
 float targetMoonBrightness = minMoonBrightness;
+unsigned long lastMoonFadeTime = 0;
+
 
 // Sysex Hanlder
 
@@ -91,8 +93,9 @@ void sysexCallback(byte command, byte argc, byte *argv)
   switch (command) {
     case SET_BRIGHTNESS:
 
-      targetMoonBrightness = constrain(currentMoonBrightness + 64, minMoonBrightness, 320);
-
+      targetMoonBrightness = currentMoonBrightness + 16.0;
+      if (targetMoonBrightness > 320.0) targetMoonBrightness= 320.0;
+      
       break;
   }
 }
@@ -323,27 +326,31 @@ void updateIndices() {
 
 
 void lightMoon() {
-
-
-  if (currentMoonBrightness != targetMoonBrightness) {
-
-    if (currentMoonBrightness > targetMoonBrightness) {
-      targetMoonBrightness = minMoonBrightness;
+  // fade target
+  if (millis() > lastMoonFadeTime + 10){
+      targetMoonBrightness -= 0.25;
+      if (targetMoonBrightness < minMoonBrightness) targetMoonBrightness= minMoonBrightness;
+      lastMoonFadeTime= millis();
     }
 
+  // chase target if not close enough
+  if (abs(currentMoonBrightness - targetMoonBrightness) > 1.0) {
     if (currentMoonBrightness > targetMoonBrightness) {
-      currentMoonBrightness -= .05;
+      currentMoonBrightness -= 0.5;
     } else {
-      currentMoonBrightness += .1;
-    }
-
-    for (int i = 0; i < INPUT_COUNT; i++) {
-      if (inputs[i].active != false) continue;
-      analogWrite(inputs[i].ledPin,  constrain(currentMoonBrightness, minMoonBrightness, 255));
-    }
-
+      currentMoonBrightness += 0.025;
+    }  
   }
   
+  setMoonBrightness( constrain( currentMoonBrightness, minMoonBrightness, 255 ) );
+  
+}
+
+void setMoonBrightness(int b){
+  for (int i = 0; i < INPUT_COUNT; i++) {
+      if (inputs[i].active != false) continue;
+      analogWrite(inputs[i].ledPin,  b);
+  }
 }
 
 //
