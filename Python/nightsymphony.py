@@ -88,6 +88,8 @@ class CustomBoard(pyfirmata.Board):
     address = data[0];
     print "Board Identified: " + str(address)
     print self
+    
+    self.name = address
 
     if address == moonBoard:
       print "Moon detected"
@@ -125,6 +127,8 @@ for port in ports:
 # Main Loop
 #
 
+currentError = ""
+
 while True:
 
   # Process Voices
@@ -141,12 +145,17 @@ while True:
 
   # Process Board Data
 
+  oldError = currentError
+  currentError = ""
+
   for board in boards:
 
     # Process input
-
-    while board.bytes_available():
-      board.iterate();
+    try:
+        while board.bytes_available():
+	    board.iterate();
+    except IOError as e:
+        currentError += "Board %d: I/O error({0}): {1}\n".format(e.errno, e.strerror) % board.name
 
     # Handle the moon
 
@@ -158,4 +167,7 @@ while True:
     # Quick sleep
 
     time.sleep(0.001);  
+
+  if currentError != oldError:
+    print currentError
 
