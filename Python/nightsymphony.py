@@ -120,10 +120,13 @@ def detectBoards():
 
   ports = glob.glob('/dev/ttyACM*') + glob.glob('/dev/cu.usbmodem*')
   for port in ports:
-    newBoard = CustomBoard(port, None)
-    print newBoard
-
-    boards.append(newBoard);
+    try:
+	newBoard = CustomBoard(port, None)
+    except Exception as e:
+  	print "board detection error: " + str(e)
+    else:
+	print newBoard
+    	boards.append(newBoard);
 
 detectBoards()
 
