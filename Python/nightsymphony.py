@@ -114,14 +114,18 @@ class CustomBoard(pyfirmata.Board):
 # Board Detection
 # 
 
-print "Detecting Boards"
+def detectBoards():
+  print "Detecting Boards"
+  boards[:] = [] # clear board list
 
-ports = glob.glob('/dev/ttyACM*') + glob.glob('/dev/cu.usbmodem*')
-for port in ports:
-  newBoard = CustomBoard(port, None)
-  print newBoard
+  ports = glob.glob('/dev/ttyACM*') + glob.glob('/dev/cu.usbmodem*')
+  for port in ports:
+    newBoard = CustomBoard(port, None)
+    print newBoard
 
-  boards.append(newBoard);
+    boards.append(newBoard);
+
+detectBoards()
 
 #
 # Main Loop
@@ -130,6 +134,15 @@ for port in ports:
 currentError = ""
 
 while True:
+    
+  # check for missing or new ports
+  numPorts = len( glob.glob('/dev/ttyACM*') + glob.glob('/dev/cu.usbmodem*') )
+  if numPorts != len(boards):
+    print "Board/Port Count Mismatch"
+    print "%d boards but %d ports" % (len(boards), numPorts)
+    detectBoards()
+
+  
 
   # Process Voices
 
@@ -156,6 +169,7 @@ while True:
 	    board.iterate();
     except IOError as e:
         currentError += "Board %d: I/O error({0}): {1}\n".format(e.errno, e.strerror) % board.name
+        detectBoards()
 
     # Handle the moon
 
