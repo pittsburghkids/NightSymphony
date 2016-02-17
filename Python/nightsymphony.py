@@ -168,7 +168,7 @@ while True:
         while board.bytes_available():
 	    board.iterate();
     except IOError as e:
-        currentError += "Board %d: I/O error({0}): {1}\n".format(e.errno, e.strerror) % board.name
+        currentError += "Board %s: I/O error({0}): {1}\n".format(e.errno, e.strerror) % str(board.name)
         detectBoards()
 
     # Handle the moon
