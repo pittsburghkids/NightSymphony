@@ -107,17 +107,17 @@ class CustomBoard(pyfirmata.Board):
     id = data[2];
     pin = data[4];
     status = data[6];
-    msg= "trigger: board " + str(address) + ", header J" + str(id+1) + ": "
+    msg= "Trigger: Board " + str(address) + ", Header J" + str(id+1) + ": "
     # headers are numbered 1-6, "id"s are 0-5. "pin"s are arduino digital io pin numbers
     if (status == 1):
-        msg+= "on. "
+        msg+= "On. "
         if ((address,id) in voices):
-            msg+= "playing sample."
+            msg+= "Playing sample."
             voices[address,id].play()
         else:
-            msg+= "no sample defined."
+            msg+= "No sample defined."
     else:
-        msg+= "off."
+        msg+= "Off."
 
     log(msg)
 
@@ -130,6 +130,7 @@ def detectBoards():
   log( "Detecting boards..." )
   boards[:] = [] # clear board list
 
+  # Try to make a board for each port
   ports = glob.glob('/dev/ttyACM*') + glob.glob('/dev/cu.usbmodem*')
   for port in ports:
     try:
@@ -139,6 +140,21 @@ def detectBoards():
     else:
 	log( str(newBoard) )
     	boards.append(newBoard);
+
+  # Wait for arduinos to reset if they're gonna
+  time.sleep(2)
+
+  log ( "Found " + str(len(boards)) + " board(s). Requesting identifications..." )
+
+  # Request identification from all boards
+  # this is only really needed for moon, since it doesn't send anything otherwise
+  for board in boards:
+    dataOut = bytearray()
+    try:
+        board.send_sysex(0xa0, dataOut) # 0xa0 == SELF_IDENTIFY
+    except Exception as e:
+        currentError += "Error sending identify request to board " + str(board.address) +  ": " + str(e)
+
 
 def log(msg):
     print msg
@@ -156,10 +172,10 @@ def log(msg):
 filename= ""
 logging= False
 if (len(argv) < 2):
-    print "no log filename given, not logging."
+    print "No log filename parameter give, not logging."
 else:
     filename= str(argv[1])
-    print "logging to " + filename
+    print "Logging to " + filename
     logging= True
 
 detectBoards()
@@ -211,10 +227,10 @@ while True:
 
     if board.isMoon:
       if (newVoice):
-        log("sending moon data...")
+        log("Sending moon data")
         dataOut = bytearray([activeVoiceCount, len(voices)])
         try:
-            board.send_sysex(0xa1, dataOut)
+            board.send_sysex(0xa1, dataOut) # 0xa1 == SET_BRIGHTNESS
         except Exception as e:
             currentError += "Error on send moon data: " + str(e)
             detectBoards()

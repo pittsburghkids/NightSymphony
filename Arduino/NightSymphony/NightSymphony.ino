@@ -8,6 +8,7 @@
 #define TRIGGER_CHANGE 0xb0
 #define SET_BRIGHTNESS 0xa1
 
+#define MOON 5
 
 byte dipPins[4] {
   PIN_TO_DIGITAL(A4), PIN_TO_DIGITAL(A3), PIN_TO_DIGITAL(A2), PIN_TO_DIGITAL(A1)
@@ -40,7 +41,6 @@ typedef struct {
   byte buffer[BUFFER_LENGTH];
   byte bufferSum;
   boolean pressed;
-  boolean active;
 
   unsigned long pressedTime;
   unsigned long releasedTime;
@@ -97,6 +97,9 @@ void sysexCallback(byte command, byte argc, byte *argv)
       if (targetMoonBrightness > 320.0) targetMoonBrightness= 320.0;
       
       break;
+    case SELF_IDENTIFY:
+      identify();
+      break;
   }
 }
 
@@ -120,20 +123,16 @@ void setup()
 
     inputs[i].pinNumber = inputPins[i];
     inputs[i].ledPin = outputPins[i];
-    inputs[i].pressed = false;
+    inputs[i].pressed = digitalRead(inputs[i].pinNumber);
 
     for (int j = 0; j < BUFFER_LENGTH; j++) {
-      inputs[i].buffer[j] = 0;
+      //inputs[i].buffer[j]= 0x00;
+      if(inputs[i].pressed) inputs[i].buffer[j]= 0xFF;
+      else inputs[i].buffer[j]= 0x00;
     }
 
-    // Do we need a delay here?
-
-    if (digitalRead(inputPins[i]) == LOW) {
-      inputs[i].active = true;
-    } else {
-      inputs[i].active = false;
-    }
-
+    if(inputs[i].pressed) inputs[i].bufferSum= 24; // max bufferSum, no idea why.
+    else inputs[i].bufferSum= 0;
   }
 
   // DIP Setup
@@ -146,12 +145,7 @@ void setup()
   // Sysex
 
   Firmata.attach(START_SYSEX, sysexCallback);
-
-  // Self Identify
-
-  delay(4000);
-  identify();
-
+  
 }
 
 void loop() {
@@ -160,11 +154,12 @@ void loop() {
     Firmata.processInput();
   }
 
-  updateBuffers();
-  updateStates();
-  updateIndices();
-
-  lightMoon();
+  if (address() == MOON) lightMoon();
+  else{
+    updateBuffers();
+    updateStates();
+    updateIndices();
+  }
 
   forceDelay();
 }
@@ -200,12 +195,10 @@ int address() {
 void updateBuffers() {
 
   for (int i = 0; i < INPUT_COUNT; i++) {
-    if (inputs[i].active == false) continue;
 
     byte currentByte = inputs[i].buffer[byteIndex];
 
     int currentValue = digitalRead(inputs[i].pinNumber);
-    //currentValue = !currentValue;
 
     inputs[i].bufferSum -= (currentByte >> bitIndex) & 0x01;
     inputs[i].bufferSum += currentValue;
@@ -231,8 +224,6 @@ void updateStates() {
   byte returnData[4];
 
   for (int i = 0; i < INPUT_COUNT; i++) {
-
-    if (inputs[i].active == false) continue;
 
     if (inputs[i].pressed) {
       if (inputs[i].bufferSum < releaseThreshold) {
@@ -321,7 +312,7 @@ void updateIndices() {
 }
 
 //
-// Unused ports handle moon message
+// Moon uses all ports to drive LEDs
 //
 
 
@@ -348,7 +339,6 @@ void lightMoon() {
 
 void setMoonBrightness(int b){
   for (int i = 0; i < INPUT_COUNT; i++) {
-      if (inputs[i].active != false) continue;
       analogWrite(inputs[i].ledPin,  b);
   }
 }
