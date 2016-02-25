@@ -23,7 +23,7 @@ class Voice():
     self.sample = pygame.mixer.Sound(samplePath);
     self.triggered = False;
   def play(self):
-    print self.samplePath
+      #print self.samplePath
     self.channel.play(self.sample);
     self.triggered = True;
   def isPlaying(self):
@@ -100,13 +100,13 @@ class CustomBoard(pyfirmata.Board):
     print data
 
   def _handle_trigger(self, *data):
-    print self
+    #print self
 
     address = data[0];
     id = data[2];
     pin = data[4];
     status = data[6];
-    print data
+    print "trigger from board " + address + ", header J" + id+1
     if (status == 1 and (address,id) in voices):
       voices[address,id].play();
 
@@ -179,7 +179,11 @@ while True:
     if board.isMoon:
       if (newVoice):
         dataOut = bytearray([activeVoiceCount, len(voices)])
-        board.send_sysex(0xa1, dataOut)     
+        try:
+            board.send_sysex(0xa1, dataOut)
+        except Exception as e:
+            currentError += "Error on send moon data: " + str(e)
+            detectBoards()
     
     # Quick sleep
 
