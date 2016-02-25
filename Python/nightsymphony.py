@@ -94,7 +94,7 @@ class CustomBoard(pyfirmata.Board):
 
     if address == moonBoard:
       log( "Moon detected" )
-      self.isMoon = True;
+      self.isMoon = True
 
   def _handle_echo(self, *data):
     log( "ECHO" )
@@ -202,7 +202,7 @@ while True:
     # Process input
     try:
         while board.bytes_available():
-	    board.iterate();
+	    board.iterate()
     except IOError as e:
         currentError += "Board %s: I/O error({0}): {1}\n".format(e.errno, e.strerror) % str(board.name)
         detectBoards()
@@ -211,6 +211,7 @@ while True:
 
     if board.isMoon:
       if (newVoice):
+        log("sending moon data...")
         dataOut = bytearray([activeVoiceCount, len(voices)])
         try:
             board.send_sysex(0xa1, dataOut)
