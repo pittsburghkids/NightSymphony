@@ -106,10 +106,20 @@ class CustomBoard(pyfirmata.Board):
     id = data[2];
     pin = data[4];
     status = data[6];
+    msg= "trigger: board " + str(address) + ", header J" + str(id+1) + ": "
     # headers are numbered 1-6, "id"s are 0-5. "pin"s are arduino digital io pin numbers
-    print "trigger from board " + str(address) + ", header J" + str(id+1)
-    if (status == 1 and (address,id) in voices):
-      voices[address,id].play();
+    if (status == 1):
+        msg+= "on. "
+        if ((address,id) in voices):
+            msg+= "playing sample."
+            voices[address,id].play()
+        else:
+            msg+= "no sample defined."
+    else:
+        msg+= "off."
+
+    print msg
+
 
 #
 # Board Detection
