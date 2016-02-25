@@ -4,6 +4,7 @@ import serial
 import time
 import glob
 from sys import argv
+import os
 
 #
 # Sound Setup
@@ -142,11 +143,11 @@ def detectBoards():
 def log(msg):
     print msg
     if (logging):
-        logfile= open(filename, "a")
-        logfile.write(msg)
-        logfile.write("\n")
-        logfile.close()
-
+        with open(filename, "a", 0) as logfile:
+            logfile.write(msg)
+            logfile.write("\n")
+            logfile.flush()
+            os.fsync(logfile.fileno())
 
 #
 # Setup
