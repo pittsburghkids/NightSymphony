@@ -3,6 +3,7 @@ import pygame
 import serial
 import time
 import glob
+from sys import argv
 
 #
 # Sound Setup
@@ -86,18 +87,17 @@ class CustomBoard(pyfirmata.Board):
 
   def _handle_identify(self, *data):
     address = data[0];
-    print "Board Identified: " + str(address)
-    print self
+    log( "Board " + str(address) + " Identified (" + str(self) + ")" )
     
     self.name = address
 
     if address == moonBoard:
-      print "Moon detected"
+      log( "Moon detected" )
       self.isMoon = True;
 
   def _handle_echo(self, *data):
-    print "ECHO"
-    print data
+    log( "ECHO" )
+    log( str(data) )
 
   def _handle_trigger(self, *data):
     #print self
@@ -118,7 +118,7 @@ class CustomBoard(pyfirmata.Board):
     else:
         msg+= "off."
 
-    print msg
+    log(msg)
 
 
 #
@@ -126,7 +126,7 @@ class CustomBoard(pyfirmata.Board):
 # 
 
 def detectBoards():
-  print "Detecting Boards"
+  log( "Detecting boards..." )
   boards[:] = [] # clear board list
 
   ports = glob.glob('/dev/ttyACM*') + glob.glob('/dev/cu.usbmodem*')
@@ -134,10 +134,32 @@ def detectBoards():
     try:
 	newBoard = CustomBoard(port, None)
     except Exception as e:
-  	print "board detection error: " + str(e)
+  	log( "Board detection error: " + str(e) )
     else:
-	print newBoard
+	log( str(newBoard) )
     	boards.append(newBoard);
+
+def log(msg):
+    print msg
+    if (logging):
+        logfile= open(filename, "a")
+        logfile.write(msg)
+        logfile.write("\n")
+        logfile.close()
+
+
+#
+# Setup
+#
+
+filename= ""
+logging= False
+if (len(argv) < 2):
+    print "no log filename given, not logging."
+else:
+    filename= str(argv[1])
+    print "logging to " + filename
+    logging= True
 
 detectBoards()
 
@@ -152,8 +174,7 @@ while True:
   # check for missing or new ports
   numPorts = len( glob.glob('/dev/ttyACM*') + glob.glob('/dev/cu.usbmodem*') )
   if numPorts != len(boards):
-    print "Board/Port Count Mismatch"
-    print "%d boards but %d ports" % (len(boards), numPorts)
+    log("Board/Port Count Mismatch: " + "%d boards but %d ports" % (len(boards), numPorts))
     detectBoards()
 
   
@@ -201,5 +222,5 @@ while True:
     time.sleep(0.001);  
 
   if currentError != oldError:
-    print currentError
+    log( currentError )
 
