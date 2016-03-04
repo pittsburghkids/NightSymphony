@@ -101,26 +101,29 @@ class CustomBoard(pyfirmata.Board):
     log( str(data) )
 
   def _handle_trigger(self, *data):
-    #print self
-
-    address = data[0];
-    id = data[2];
-    pin = data[4];
-    status = data[6];
-    msg= "Trigger: Board " + str(address) + ", Header J" + str(id+1) + ": "
-    # headers are numbered 1-6, "id"s are 0-5. "pin"s are arduino digital io pin numbers
-    if (status == 1):
-        msg+= "On. "
-        if ((address,id) in voices):
-            msg+= "Playing sample."
-            voices[address,id].play()
-        else:
-            msg+= "No sample defined."
+    if ( len(data) != 8 ):
+        log("Error on trigger handle, missing data. Expected 8 bytes")
+        msg= "Data (Length = " + str(len(data)) + "): "
+        for d in data:
+            msg+= str(d) + ", "
+        log(msg)
     else:
-        msg+= "Off."
-
-    log(msg)
-
+        address = data[0];
+        id = data[2];
+        pin = data[4];
+        status = data[6];
+        msg= "Trigger: Board " + str(address) + ", Header J" + str(id+1) + ": "
+        # headers are numbered 1-6, "id"s are 0-5. "pin"s are arduino digital io pin numbers
+        if (status == 1):
+            msg+= "On. "
+            if ((address,id) in voices):
+                msg+= "Playing sample."
+                voices[address,id].play()
+            else:
+                msg+= "No sample defined."
+        else:
+            msg+= "Off."
+        log(msg)
 
 #
 # Board Detection
