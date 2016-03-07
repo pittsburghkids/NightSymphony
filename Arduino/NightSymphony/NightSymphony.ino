@@ -7,6 +7,7 @@
 #define SELF_IDENTIFY 0xa0
 #define TRIGGER_CHANGE 0xb0
 #define SET_BRIGHTNESS 0xa1
+#define HEARTBEAT 0xa3
 
 #define MOON 5
 
@@ -82,6 +83,8 @@ float currentMoonBrightness = 0;
 float targetMoonBrightness = minMoonBrightness;
 unsigned long lastMoonFadeTime = 0;
 
+// Heartbeat
+unsigned long lastBeatTime= 0;
 
 // Sysex Hanlder
 
@@ -91,12 +94,12 @@ void sysexCallback(byte command, byte argc, byte *argv)
   //Firmata.sendSysex(0xa2, argc, argv);
 
   switch (command) {
+    
     case SET_BRIGHTNESS:
-
       targetMoonBrightness = currentMoonBrightness + 16.0;
       if (targetMoonBrightness > 320.0) targetMoonBrightness= 320.0;
-      
       break;
+      
     case SELF_IDENTIFY:
       identify();
       break;
@@ -161,6 +164,13 @@ void loop() {
     updateIndices();
   }
 
+  // send heartbeat every 2 sec to let python know we're not dead
+  if (millis() > lastBeatTime + 2000){
+    // heartbeat consists of identification message
+    heartbeat();
+    lastBeatTime= millis();
+  }
+  
   forceDelay();
 }
 
@@ -174,6 +184,14 @@ void identify() {
   returnData[0] = (byte) address();
 
   Firmata.sendSysex(SELF_IDENTIFY, 1, returnData);
+}
+
+void heartbeat(){
+  byte returnData[1];
+
+  returnData[0] = (byte) address();
+
+  Firmata.sendSysex(HEARTBEAT, 1, returnData);
 }
 
 //
@@ -225,24 +243,25 @@ void updateStates() {
 
   for (int i = 0; i < INPUT_COUNT; i++) {
 
+    // check for release
     if (inputs[i].pressed) {
       if (inputs[i].bufferSum < releaseThreshold) {
         inputs[i].pressed = false;
         inputs[i].releasedTime = millis();
         inputs[i].releasedBrightness = inputs[i].currentBrightness;
 
-        returnData[0] = (byte) address();
-        returnData[1] = (byte) i;
-        returnData[2] = (byte) inputs[i].pinNumber;
-        returnData[3] = (byte) 0;
+        // python doesn't need to know about releases
+        //returnData[0] = (byte) address();
+        //returnData[1] = (byte) i;
+        //returnData[2] = (byte) inputs[i].pinNumber;
+        //returnData[3] = (byte) 0;
 
-        Firmata.sendSysex(TRIGGER_CHANGE, 4, returnData);
-
+        //Firmata.sendSysex(TRIGGER_CHANGE, 4, returnData);
       }
-
     }
+    
+    // check for press
     else if (!inputs[i].pressed) {
-
       if (inputs[i].bufferSum > pressThreshold) { // input becomes pressed
         inputs[i].pressed = true;
         inputs[i].pressedTime = millis();
@@ -254,15 +273,13 @@ void updateStates() {
         returnData[3] = (byte) 1;
 
         Firmata.sendSysex(TRIGGER_CHANGE, 4, returnData);
-
-
       }
     }
 
+    // update LED brightness
     if (inputs[i].ledPin != NULL) {
-
-      if (inputs[i].pressed) {
-
+      
+      if (inputs[i].pressed) {       
         unsigned long elapsed = millis() - inputs[i].pressedTime;
 
         if (elapsed < 10) {
@@ -279,7 +296,6 @@ void updateStates() {
         }
 
       } else {
-
         unsigned long elapsed = millis() - inputs[i].releasedTime;
 
         if (elapsed < 250) {
@@ -344,7 +360,7 @@ void setMoonBrightness(int b){
 }
 
 //
-// Make sure each loop lasts at least TARGET_LOOP_TIME
+// Make sure each loop lasts at least TARGET_LOOP_TIME microseconds
 //
 
 void forceDelay() {
