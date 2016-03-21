@@ -137,53 +137,6 @@ class CustomBoard(pyfirmata.Board):
     if ( time.clock() > self.lastHeartbeat + 5 ): return True
     else: return False
 
-
-
-
-# The following arduino reset stuff was stolen from Paul Furtado: https://gist.github.com/PaulFurtado/fce98aef890469f34d51
-
-# Equivalent of the _IO('U', 20) constant in the linux kernel.
-USBDEVFS_RESET = ord('U') << (4*2) | 20
-  
-def get_arduinos():
-  """
-  Gets the devfs path to an Arduino microcontroller by scraping the output
-  of the lsusb command
-        
-  The lsusb command outputs a list of USB devices attached to a computer
-  in the format:
-  Bus 002 Device 009: ID 16c0:0483 Van Ooijen Technische Informatica Teensyduino Serial
-  The devfs path to these devices is:
-  /dev/bus/usb/<busnum>/<devnum>
-  So for the above device, it would be:
-  /dev/bus/usb/002/009
-  This function generates that path.
-  """
-  proc = subprocess.Popen(['lsusb'], stdout=subprocess.PIPE)
-  out = proc.communicate()[0]
-  lines = out.split('\n')
-  arduinos= list()
-  for line in lines:
-    if 'Arduino' in line:
-      parts = line.split()
-      bus = parts[1]
-      dev = parts[3][:3]
-      arduinos.append( '/dev/bus/usb/%s/%s' % (bus, dev) )
-  return arduinos
-  
-def send_reset(dev_path):
-  """
-    Sends the USBDEVFS_RESET IOCTL to a USB device.
-    dev_path - The devfs path to the USB device (under /dev/bus/usb/)
-    See get_teensy for example of how to obtain this.
-  """
-  fd = os.open(dev_path, os.O_WRONLY)
-  try:
-    fcntl.ioctl(fd, USBDEVFS_RESET, 0)
-  finally:
-    os.close(fd)
-
-
 #
 # Board Detection
 #
@@ -234,7 +187,7 @@ def log(msg):
 filename= ""
 logging= False
 if (len(argv) < 2):
-  print "No log filename parameter give, not logging."
+  print "No log filename parameter given, not logging."
 else:
   filename= str(argv[1])
   print "Logging to " + filename
@@ -298,13 +251,8 @@ while True:
     # check for board death
     if ( board.isDead() ):
       log("Board " + str(board.name) + " (" + str(board.sp.port) + ") Dead")
-      # reset arduinos
-      arduinos= get_arduinos()
-      for arduino in arduinos:
-        log( "Resetting arduino at " + str(arduino) )
-        send_reset(arduino)
-      detectBoards()
-
+      log("Exiting script- rc.local should run again, all arduinos should reset")
+      exit(0)
 
     # Quick sleep
     time.sleep(0.001)
@@ -312,4 +260,5 @@ while True:
 
   if currentError != oldError:
     log( currentError )
+
 
