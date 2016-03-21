@@ -12,6 +12,9 @@
 #define MOON 5
 
 byte dipPins[4] {
+  // Dip switch output is binary encoded in 4 wires
+  // MSB: A4, LSB: A1
+  
   PIN_TO_DIGITAL(A4), PIN_TO_DIGITAL(A3), PIN_TO_DIGITAL(A2), PIN_TO_DIGITAL(A1)
 };
 
@@ -196,6 +199,7 @@ void heartbeat(){
 
 //
 // Get DIP address
+// Dip switch output is parallel binary
 //
 
 int address() {
