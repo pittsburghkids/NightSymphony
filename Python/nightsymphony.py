@@ -168,7 +168,7 @@ def detectBoards():
     try:
       board.send_sysex(0xa0, dataOut) # 0xa0 == SELF_IDENTIFY
     except Exception as e:
-      log( "Error sending identify request to board " + str(board.address) +  ": " + str(e) )
+      log( "Error sending identify request to board: " + str(e) )
 
 
 def log(msg):
